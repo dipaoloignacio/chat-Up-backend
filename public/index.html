@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSockets Cliente</title>
+
+    <link rel="icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <h1>Status</h1>
+    <p id="status">Connecting</p>
+
+    <form id="login-form" style="margin-bottom: 20px">
+      <input type="email" id="input-email" placeholder="Email" />
+      <input type="password" id="input-password" placeholder="Password" />
+      <button id="btn-login">Login</button>
+    </form>
+
+    <button id="btn-disconnect">Disconnect</button>
+    <button id="btn-connect">Connect</button>
+
+    <form id="message-form" style="display: none">
+      <h1>Messages</h1>
+      <select id="select-receiver">
+        <option value="">Everyone</option>
+        <option value="1">Eve</option>
+        <option value="2">Bob</option>
+        <option value="3">Charlie</option>
+      </select>
+      <input type="text" id="input-message" placeholder="Message" />
+      <button id="send">Send</button>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <script>
+      // Crear cookies
+      // const session = {
+      //   id: 1,
+      //   sessionId: 'Abc123',
+      // };
+      // const jwtToken = 'MiToken-JWT';
+      // document.cookie = `session=${JSON.stringify(session)}`;
+      // document.cookie = `X-Token=${jwtToken}`;
+
+      let socket;
+
+      const status = document.querySelector('#status');
+      const messageForm = document.querySelector('#message-form');
+      const messageInput = document.querySelector('#input-message');
+      const messagesContainer = document.querySelector('#messages');
+
+      const btnDisconnect = document.querySelector('#btn-disconnect');
+      const btnConnect = document.querySelector('#btn-connect');
+
+      const loginForm = document.querySelector('#login-form');
+      const inputEmail = document.querySelector('#input-email');
+      const inputPassword = document.querySelector('#input-password');
+      const btnLogin = document.querySelector('#btn-login');
+
+      const usersSelect = document.querySelector('#select-receiver');
+
+      const createWebSocket = () => {
+        const channelId = 'mi-canal-personalizado';
+
+        const socket = new WebSocket(
+          `ws://localhost:3201?channelId=${channelId}`
+        );
+
+        socket.onopen = () => {
+          console.log('WebSocket conectado');
+          messageForm.style.display = 'block';
+          status.textContent = 'Conectado';
+        };
+
+        socket.onclose = () => {
+          console.log('WebSocket desconectado');
+          messageForm.style.display = 'none';
+          status.textContent = 'Desconectado';
+        };
+
+        socket.onerror = (event) => {
+          console.log({ error: event });
+        };
+
+        socket.onmessage = (event) => {
+          // console.log(event.data);
+          showMessage(event.data);
+        };
+
+        return socket;
+      };
+
+      socket = createWebSocket();
+
+      btnDisconnect.addEventListener('click', () => {
+        if (socket.readyState !== WebSocket.OPEN) return;
+        socket.close();
+      });
+
+      btnConnect.addEventListener('click', () => {
+        if (socket.readyState === WebSocket.OPEN) return;
+        socket = createWebSocket();
+      });
+
+      messageForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!messageInput.value && messageInput.value.length === 0) return;
+        const receiverId = usersSelect.value;
+
+        const message = {
+          type:
+            receiverId === '' ? 'SEND_GROUP_MESSAGE' : 'SEND_DIRECT_MESSAGE',
+          payload: {
+            content: messageInput.value,
+            receiverId: receiverId,
+          },
+        };
+
+        socket.send(JSON.stringify(message));
+        // showMessage(messageInput.value);
+        messageInput.value = '';
+      });
+
+      const showMessage = (message) => {
+        const jsonMessage = JSON.parse(message);
+
+        if (jsonMessage.type === 'SEND_CONNECTED_USERS_RESPONSE') {
+          const users = jsonMessage.payload.users;
+          usersSelect.innerHTML = '';
+
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Everyone';
+          usersSelect.appendChild(option);
+
+          users.forEach((user) => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            usersSelect.appendChild(option);
+          });
+        }
+
+        const pre = document.createElement('pre');
+        pre.innerHTML = JSON.stringify(jsonMessage, null, 2);
+
+        messagesContainer.prepend(pre);
+      };
+
+      // Manejo del login
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!inputEmail.value && inputEmail.length === 0) return;
+        if (!inputPassword.value && inputPassword.length === 0) return;
+
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: inputEmail.value.trim(),
+            password: inputPassword.value,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.error);
+        }
+
+        console.log({ data });
+        document.cookie = `X-Token=${data.token}`;
+
+        socket = createWebSocket();
+      });
+    </script>
+  </body>
+</html>
