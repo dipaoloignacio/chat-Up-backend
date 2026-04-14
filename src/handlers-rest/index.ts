@@ -1,8 +1,10 @@
 import { prisma } from '../prisma/db';
 import { generateJwtToken } from '../utils/jwt-validation';
 
+const allowedOrigin = process.env.CORS_ORIGIN;
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://chat-up-frontend-delta.vercel.app',
+  'Access-Control-Allow-Origin': allowedOrigin,
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Credentials': 'true',

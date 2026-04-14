@@ -1,11 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { SERVER_CONFIG } from './config/server-config';
 
-const BASE_URL = 'http://localhost:3205';
-const WS_URL = 'ws://localhost:3205';
+const BASE_URL = SERVER_CONFIG.base_url;
+const WS_URL = SERVER_CONFIG.ws_url;
 
-const BOT_EMAIL = 'bot@chatup.com';
-const BOT_PASSWORD = 'xK9#mP2$qL7@nR4&wJ6!vH8*yF3^zD5';
-const MESSAGE_LIMIT = 5;
+const BOT_EMAIL = SERVER_CONFIG.bot_email;
+const BOT_PASSWORD = SERVER_CONFIG.bot_password;
+const MESSAGE_LIMIT = SERVER_CONFIG.message_limit;
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -40,8 +41,12 @@ async function login(): Promise<string> {
 
 async function connectBot() {
     const token = await login();
+    
+    if (!process.env.WS_URL) {
+        throw new Error("WS_URL no está definida en el .env");
+    }
 
-    const ws = new WebSocket(WS_URL, {
+    const ws = new WebSocket(WS_URL!, {
         headers: { Cookie: `X-Token=${token}` },
     } as any);
 
