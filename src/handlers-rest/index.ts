@@ -1,28 +1,39 @@
 import { prisma } from '../prisma/db';
 import { generateJwtToken } from '../utils/jwt-validation';
 
-const allowedOrigin = process.env.CORS_ORIGIN;
+const allowedOrigins = [
+  'https://chat-up-frontend-delta.vercel.app',
+  'http://localhost:5173',
+];
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': allowedOrigin,
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Credentials': 'true',
-};
+export function getCorsHeaders(requestOrigin: string): Record<string, string> {
+  const origin = allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : allowedOrigins[0] ?? '';
+
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
 
 export const handleApiRequest = async (req: Request) => {
   const url = new URL(req.url);
+  const origin = req.headers.get('origin') ?? '';
+  const corsHeaders = getCorsHeaders(origin);
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/login') {
-    return handleLogin(req);
+    return handleLogin(req, corsHeaders);
   }
 };
 
-const handleLogin = async (req: Request): Promise<Response> => {
+const handleLogin = async (req: Request, corsHeaders: Record<string, string>): Promise<Response> => {
   try {
     const body = await req.json();
     const { email = '', password = '' } = body as any;
