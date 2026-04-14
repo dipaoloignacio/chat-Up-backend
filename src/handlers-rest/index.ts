@@ -2,7 +2,7 @@ import { prisma } from '../prisma/db';
 import { generateJwtToken } from '../utils/jwt-validation';
 
 const allowedOrigins = [
-  'https://chat-up-frontend-delta.vercel.app',
+  'https://chatup.dipaoloproyects.space/',
   'http://localhost:5173',
 ];
 
