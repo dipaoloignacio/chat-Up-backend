@@ -30,7 +30,7 @@ export const createServer = () => {
 
       //! Identificar nuestros clientes/usuarios
       const cookies = new Bun.CookieMap(req.headers.get('Cookie') || '');
-      const jwt = cookies.get('X-Token');
+      const jwt = cookies.get('X-Token') || new URL(req.url).searchParams.get('token');
       if (!jwt) {
         return new Response('Unauthorized', { status: 401 });
       }
