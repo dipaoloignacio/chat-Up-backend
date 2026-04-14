@@ -39,15 +39,29 @@ async function login(): Promise<string> {
     return data.token;
 }
 
+let currentToken: string = '';
+
+async function startTokenRefresh() {
+    setInterval(async () => {
+        try {
+            currentToken = await login();
+            console.log('🔑 Token renovado');
+        } catch (error) {
+            console.error('Error renovando token:', error);
+        }
+    }, 60 * 60 * 1000); // cada 1 hora
+}
+
 async function connectBot() {
-    const token = await login();
-    
+    currentToken = await login();
+    startTokenRefresh();
+
     if (!process.env.WS_URL) {
         throw new Error("WS_URL no está definida en el .env");
     }
 
     const ws = new WebSocket(WS_URL!, {
-        headers: { Cookie: `X-Token=${token}` },
+        headers: { Cookie: `X-Token=${currentToken}` },
     } as any);
 
     ws.addEventListener('open', () => {
