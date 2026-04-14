@@ -27,6 +27,11 @@ const seedUsers = [
     email: 'luis@google.com',
     password: '123456',
   },
+  {
+    name: 'Claude 🤖',
+    email: 'bot@chatup.com',
+    password: 'xK9#mP2$qL7@nR4&wJ6!vH8*yF3^zD5',
+  },
 ];
 
 const main = async () => {
