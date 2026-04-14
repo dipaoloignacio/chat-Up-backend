@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const BASE_URL = 'http://localhost:3201';
-const WS_URL = 'ws://localhost:3201';
+const BASE_URL = 'http://localhost:3205';
+const WS_URL = 'ws://localhost:3205';
 
 const BOT_EMAIL = 'bot@chatup.com';
 const BOT_PASSWORD = 'xK9#mP2$qL7@nR4&wJ6!vH8*yF3^zD5';
