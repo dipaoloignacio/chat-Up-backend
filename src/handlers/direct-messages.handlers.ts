@@ -50,7 +50,7 @@ export const handleDirectMessage = async (
     );
 
     return {
-      type: 'SEND_DIRECT_MESSAGES_RESPONSE',
+      type: 'NEW_DIRECT_MESSAGE',
       payload: {
         receiverId,
         messages: [directMessage],

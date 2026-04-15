@@ -102,7 +102,6 @@ export const createServer = () => {
       },
       close(ws, code, message) {
         //! Una vez que el cliente se desconecta, "de-suscribir" del canal por defecto
-
         ws.unsubscribe(SERVER_CONFIG.defaultChannelName);
         ws.unsubscribe(ws.data.userId);
 
