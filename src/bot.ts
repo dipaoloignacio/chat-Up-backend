@@ -71,7 +71,7 @@ async function connectBot() {
     ws.addEventListener('message', async (event) => {
         const msg = JSON.parse(event.data as string);
 
-        if (msg.type !== 'SEND_DIRECT_MESSAGES_RESPONSE') return;
+       if (msg.type !== 'NEW_DIRECT_MESSAGE') return;
 
         const { messages } = msg.payload;
         if (!messages?.length) return;
